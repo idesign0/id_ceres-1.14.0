@@ -668,10 +668,11 @@ bool CovarianceImpl::ComputeCovarianceValuesUsingSuiteSparseQR() {
   // more efficient, both in runtime as well as the quality of
   // ordering computed. So, it maybe worth doing that analysis
   // separately.
+  // Note: Static_cast as SUiteSparseQR expects SuiteSparse_long
   const SuiteSparse_long rank =
       SuiteSparseQR<double>(SPQR_ORDERING_BESTAMD,
                             SPQR_DEFAULT_TOL,
-                            cholmod_jacobian.ncol,
+                            static_cast<SuiteSparse_long>(cholmod_jacobian.ncol),
                             &cholmod_jacobian,
                             &R,
                             &permutation,

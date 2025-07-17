@@ -50,6 +50,7 @@
 
 #include <algorithm>
 #include <map>
+#include <random>
 #include "ceres/block_random_access_matrix.h"
 #include "ceres/block_sparse_matrix.h"
 #include "ceres/block_structure.h"
@@ -155,6 +156,9 @@ void SchurEliminator<kRowBlockSize, kEBlockSize, kFBlockSize>::Init(
 
   uneliminated_row_begins_ = chunk.start + chunk.size;
   if (num_threads_ > 1) {
+    // create a random device and generator (better randomness)
+    std::random_device rd;
+    std::mt19937 g(rd());
     random_shuffle(chunks_.begin(), chunks_.end());
   }
 

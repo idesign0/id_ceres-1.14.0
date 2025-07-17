@@ -32,6 +32,13 @@
 cmake_minimum_required(VERSION 2.8.0)
 cmake_policy(VERSION 2.8)
 
+# including and setting up required configs for apple platforms
+if(APPLE)
+  add_compile_definitions(CERES_USE_OPENMP)
+  set(CMAKE_CXX_STANDARD 17)
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+endif
+
 cmake_policy(SET CMP0003 NEW)
 if (POLICY CMP0042)
   cmake_policy(SET CMP0042 NEW)
@@ -407,23 +414,45 @@ if (NOT CUSTOM_BLAS)
   message("-- Disabling custom blas")
 endif (NOT CUSTOM_BLAS)
 
-if (OPENMP)
-  # Find quietly, as we can continue without OpenMP if it is not found.
-  find_package(OpenMP QUIET)
-  if (OPENMP_FOUND)
-    message("-- Building with OpenMP.")
-    list(APPEND CERES_COMPILE_OPTIONS CERES_USE_OPENMP)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-  else (OPENMP_FOUND)
-    message("-- Failed to find OpenMP, disabling. This is expected on "
-      "Clang < 3.8, and at least Xcode <= 8.  See Ceres documentation for "
-      "instructions to build with LLVM from Homebrew to enable OpenMP on OS X.")
-    update_cache_variable(OPENMP OFF)
-  endif (OPENMP_FOUND)
-else (OPENMP)
-  message("-- Building without OpenMP, disabling.")
-endif (OPENMP)
+if(APPLE)
+  # Manually tell CMake how to find OpenMP
+  set(OpenMP_C_FLAGS "-Xclang -fopenmp")
+  set(OpenMP_CXX_FLAGS "-Xclang -fopenmp")
+  set(OpenMP_C_LIB_NAMES "omp")
+  set(OpenMP_CXX_LIB_NAMES "omp")
+  set(OpenMP_omp_LIBRARY "/opt/homebrew/opt/libomp/lib/libomp.dylib")
+
+  find_package(OpenMP REQUIRED)
+
+  if(OpenMP_CXX_FOUND)
+    message(STATUS "OpenMP with Apple Clang enabled")
+    add_compile_options(-Xclang -fopenmp)
+    include_directories(SYSTEM "/opt/homebrew/opt/libomp/include")
+    link_directories("/opt/homebrew/opt/libomp/lib")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lomp")
+    add_compile_definitions(CERES_USE_OPENMP)
+  else()
+    message(FATAL_ERROR "OpenMP NOT found")
+  endif()
+else()
+  if (OPENMP)
+    # Find quietly, as we can continue without OpenMP if it is not found.
+    find_package(OpenMP QUIET)
+    if (OPENMP_FOUND)
+      message("-- Building with OpenMP.")
+      list(APPEND CERES_COMPILE_OPTIONS CERES_USE_OPENMP)
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+      set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    else (OPENMP_FOUND)
+      message("-- Failed to find OpenMP, disabling. This is expected on "
+        "Clang < 3.8, and at least Xcode <= 8.  See Ceres documentation for "
+        "instructions to build with LLVM from Homebrew to enable OpenMP on OS X.")
+      update_cache_variable(OPENMP OFF)
+    endif (OPENMP_FOUND)
+  else (OPENMP)
+    message("-- Building without OpenMP, disabling.")
+  endif (OPENMP)
+endif
 
 # Initialise CMAKE_REQUIRED_FLAGS used by CheckCXXSourceCompiles with the
 # contents of CMAKE_CXX_FLAGS such that if the user has passed extra flags
