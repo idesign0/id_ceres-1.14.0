@@ -37,7 +37,7 @@ if(APPLE)
   add_compile_definitions(CERES_USE_OPENMP)
   set(CMAKE_CXX_STANDARD 17)
   set(CMAKE_CXX_STANDARD_REQUIRED ON)
-endif
+endif()
 
 cmake_policy(SET CMP0003 NEW)
 if (POLICY CMP0042)
@@ -137,7 +137,7 @@ cmake_dependent_option(
 option(EIGENSPARSE "Enable Eigen as a sparse linear algebra library." ON)
 option(EXPORT_BUILD_DIR
   "Export build directory using CMake (enables external use without install)." OFF)
-option(BUILD_TESTING "Enable tests" ON)
+option(BUILD_TESTING "Enable tests" OFF)
 option(BUILD_DOCUMENTATION "Build User's Guide (html)" OFF)
 option(BUILD_EXAMPLES "Build examples" ON)
 cmake_dependent_option(
@@ -452,7 +452,7 @@ else()
   else (OPENMP)
     message("-- Building without OpenMP, disabling.")
   endif (OPENMP)
-endif
+endif()
 
 # Initialise CMAKE_REQUIRED_FLAGS used by CheckCXXSourceCompiles with the
 # contents of CMAKE_CXX_FLAGS such that if the user has passed extra flags
@@ -489,17 +489,21 @@ endif()
 # Set the Ceres compile definitions for the shared_ptr configuration.
 include(FindSharedPtr)
 find_shared_ptr()
-if (SHARED_PTR_FOUND)
-  if (SHARED_PTR_TR1_MEMORY_HEADER)
-    list(APPEND CERES_COMPILE_OPTIONS CERES_TR1_MEMORY_HEADER)
-  endif (SHARED_PTR_TR1_MEMORY_HEADER)
-  if (SHARED_PTR_TR1_NAMESPACE)
-    list(APPEND CERES_COMPILE_OPTIONS CERES_TR1_SHARED_PTR)
-  endif (SHARED_PTR_TR1_NAMESPACE)
-else (SHARED_PTR_FOUND)
-  message(FATAL_ERROR "Unable to find shared_ptr, try enabling CXX11 option "
-    "if you expect C++11 to be available.")
-endif (SHARED_PTR_FOUND)
+
+#Note: for Apple we dont require shared_ptr, as it is always available.
+if(NOT APPLE)
+  if (SHARED_PTR_FOUND)
+    if (SHARED_PTR_TR1_MEMORY_HEADER)
+      list(APPEND CERES_COMPILE_OPTIONS CERES_TR1_MEMORY_HEADER)
+    endif (SHARED_PTR_TR1_MEMORY_HEADER)
+    if (SHARED_PTR_TR1_NAMESPACE)
+      list(APPEND CERES_COMPILE_OPTIONS CERES_TR1_SHARED_PTR)
+    endif (SHARED_PTR_TR1_NAMESPACE)
+  else (SHARED_PTR_FOUND)
+    message(FATAL_ERROR "Unable to find shared_ptr, try enabling CXX11 option "
+      "if you expect C++11 to be available.")
+  endif (SHARED_PTR_FOUND)
+endif()
 
 include(FindCXX11MathFunctions)
 find_cxx11_math_functions()

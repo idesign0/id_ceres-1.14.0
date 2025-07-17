@@ -159,7 +159,7 @@ void SchurEliminator<kRowBlockSize, kEBlockSize, kFBlockSize>::Init(
     // create a random device and generator (better randomness)
     std::random_device rd;
     std::mt19937 g(rd());
-    random_shuffle(chunks_.begin(), chunks_.end());
+    std::shuffle(chunks_.begin(), chunks_.end(), g);
   }
 
   buffer_.reset(new double[buffer_size_ * num_threads_]);

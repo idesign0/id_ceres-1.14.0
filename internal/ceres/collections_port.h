@@ -79,10 +79,10 @@ namespace ceres {
 namespace internal {
 
 template<typename K, typename V>
-struct HashMap : map<K, V> {};
+struct HashMap : std::map<K, V> {};
 
 template<typename K>
-struct HashSet : set<K> {};
+struct HashSet : std::set<K> {};
 
 }  // namespace internal
 }  // namespace ceres

@@ -287,23 +287,27 @@ suitesparse_find_component(CCOLAMD REQUIRED FILES ccolamd.h LIBRARIES ccolamd)
 suitesparse_find_component(CHOLMOD REQUIRED FILES cholmod.h LIBRARIES cholmod)
 suitesparse_find_component(
   SUITESPARSEQR REQUIRED FILES SuiteSparseQR.hpp LIBRARIES spqr)
-if (SUITESPARSEQR_FOUND)
-  # SuiteSparseQR may be compiled with Intel Threading Building Blocks,
-  # we assume that if TBB is installed, SuiteSparseQR was compiled with
-  # support for it, this will do no harm if it wasn't.
-  find_package(TBB QUIET)
-  if (TBB_FOUND)
-    message(STATUS "Found Intel Thread Building Blocks (TBB) library "
-      "(${TBB_VERSION}) assuming SuiteSparseQR was compiled "
-      "with TBB.")
-    # Add the TBB libraries to the SuiteSparseQR libraries (the only
-    # libraries to optionally depend on TBB).
-    list(APPEND SUITESPARSEQR_LIBRARY ${TBB_LIBRARIES})
-  else()
-    message(STATUS "Did not find Intel TBB library, assuming SuiteSparseQR was "
-      "not compiled with TBB.")
-  endif()
-endif(SUITESPARSEQR_FOUND)
+
+# In apple we reply on brew to install SuiteSparseQR
+if(NOT APPLE)
+  if (SUITESPARSEQR_FOUND)
+    # SuiteSparseQR may be compiled with Intel Threading Building Blocks,
+    # we assume that if TBB is installed, SuiteSparseQR was compiled with
+    # support for it, this will do no harm if it wasn't.
+    find_package(TBB QUIET)
+    if (TBB_FOUND)
+      message(STATUS "Found Intel Thread Building Blocks (TBB) library "
+        "(${TBB_VERSION}) assuming SuiteSparseQR was compiled "
+        "with TBB.")
+      # Add the TBB libraries to the SuiteSparseQR libraries (the only
+      # libraries to optionally depend on TBB).
+      list(APPEND SUITESPARSEQR_LIBRARY ${TBB_LIBRARIES})
+    else()
+      message(STATUS "Did not find Intel TBB library, assuming SuiteSparseQR was "
+        "not compiled with TBB.")
+    endif()
+  endif(SUITESPARSEQR_FOUND)
+endif()
 
 # UFconfig / SuiteSparse_config.
 #
